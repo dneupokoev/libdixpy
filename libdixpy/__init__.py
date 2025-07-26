@@ -7,7 +7,7 @@ libdixpy - Библиотека с различными утилитами дл�
 """
 
 # Импорт основной функциональности
-from .uuid_bigint_incr import uuid_gen
+from .uuid_bigint_incr import uuid_gen, uuid_test_perfomance
 
 # Версия пакета
 __version__ = "0.0.1"  # Формат: MAJOR.MINOR.PATCH
@@ -16,4 +16,5 @@ __version__ = "0.0.1"  # Формат: MAJOR.MINOR.PATCH
 __all__ = [
     'uuid_gen',
     '__version__',
+    'uuid_test_perfomance'
 ]

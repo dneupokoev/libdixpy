@@ -15,6 +15,7 @@ __version__ = "0.0.1"  # Формат: MAJOR.MINOR.PATCH
 # Определяем, что будет импортировано при from libdixpy import *
 __all__ = [
     '__version__',
+
     'uuid_gen',
     'uuid_test_performance'
 ]

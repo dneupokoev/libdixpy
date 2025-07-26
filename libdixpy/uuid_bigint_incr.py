@@ -97,7 +97,7 @@ class UUIDGenerator:
             dv_uuid = uuid_gen.generate(_sync=True)
         sync_time = time.perf_counter() - start
         dv_txt = f"Синхронный тест ({count} итераций): {sync_time:.4f} сек ({count / sync_time:,.0f} UUID/сек) uuid min={dv_uuid_min} max={dv_uuid}"
-        print(f"{dv_txt}")
+        # print(f"{dv_txt}")
         return dv_txt
 
     @staticmethod
@@ -110,7 +110,7 @@ class UUIDGenerator:
             dv_uuid = await uuid_gen.generate()
         sync_time = time.perf_counter() - start
         dv_txt = f"Асинхронный тест ({count} итераций): {sync_time:.4f} сек ({count / sync_time:,.0f} UUID/сек) uuid min={dv_uuid_min} max={dv_uuid}"
-        print(f"{dv_txt}")
+        # print(f"{dv_txt}")
         return dv_txt
 
 
@@ -129,5 +129,5 @@ def uuid_test_performance() -> dict:
 if __name__ == "__main__":
     # Пример использования
     print("Пример UUID:", uuid_gen.generate(_sync=True))
-    UUIDGenerator.run_tests_sunc()
-    asyncio.run(UUIDGenerator.run_tests_async())
+    print(f"{UUIDGenerator.run_tests_sunc()}")
+    print(f"{asyncio.run(UUIDGenerator.run_tests_async())}")

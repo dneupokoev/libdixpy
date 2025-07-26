@@ -10,7 +10,7 @@ libdixpy - Библиотека с различными утилитами дл�
 from .uuid_bigint_incr import uuid_gen, uuid_test_performance
 
 # Версия пакета
-__version__ = "0.0.1"  # Формат: MAJOR.MINOR.PATCH
+__version__ = "0.0.2"  # Формат: MAJOR.MINOR.PATCH
 
 # Определяем, что будет импортировано при from libdixpy import *
 __all__ = [

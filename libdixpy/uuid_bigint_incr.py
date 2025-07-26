@@ -118,7 +118,7 @@ class UUIDGenerator:
 uuid_gen = UUIDGenerator()
 
 
-def uuid_test_perfomance() -> dict:
+def uuid_test_performance() -> dict:
     dv_return_dict = {}
     dv_return_dict['uuid_example'] = uuid_gen.generate(_sync=True)
     dv_return_dict['uuid_test_sync'] = UUIDGenerator.run_tests_sunc()

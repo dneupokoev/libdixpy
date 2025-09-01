@@ -15,7 +15,9 @@
 # 2. Асинхронный вызов
 # from libdixpy import uuid_gen
 # print(await uuid_gen.generate())
-
+#
+dv_file_version = '250725.01'
+#
 import time
 import asyncio
 import threading

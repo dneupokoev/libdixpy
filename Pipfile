@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 setuptools = "*"
+pandas = "*"
+chardet = "*"
+aiohttp = "*"
 
 [dev-packages]
 

@@ -13,6 +13,15 @@ pip install git+https://github.com/dneupokoev/libdixpy.git
 pipenv run pip install git+https://github.com/dneupokoev/libdixpy.git
 ```
 
+Обновить пакет в проекте:
+
+```bash
+pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
+
+для pipenv:
+pipenv run pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
+```
+
 ## Утилиты
 
 - uuid_bigint_incr - Генератор 18-значных UUID с временнОй меткой

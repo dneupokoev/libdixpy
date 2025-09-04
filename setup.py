@@ -57,6 +57,8 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Database :: Database Engines/Servers",
+        "Topic :: Utilities",
     ],
     python_requires=">=3.7",
     install_requires=[
@@ -105,6 +107,7 @@ setup(
         "clickhouse",
         "logging",
         "loguru",
+        "database",
     ],
     license="MIT",
     zip_safe=False,

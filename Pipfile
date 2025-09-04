@@ -8,6 +8,7 @@ setuptools = "*"
 pandas = "*"
 chardet = "*"
 aiohttp = "*"
+loguru = "*"
 
 [dev-packages]
 

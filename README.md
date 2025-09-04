@@ -26,3 +26,4 @@ pipenv run pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
 
 - uuid_bigint_incr - Генератор 18-значных UUID с временнОй меткой
 - db_async_clickhouse - Асинхронный коннектор для ClickHouse
+- logging_utils - Утилиты для логирования с loguru

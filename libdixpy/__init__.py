@@ -5,17 +5,16 @@ libdixpy - Библиотека с различными утилитами дл�
 Основные модули:
     uuid_bigint_incr - Генератор 18-значных UUID с временнОй меткой
     db_async_clickhouse - Асинхронный коннектор для ClickHouse
+    logging_utils - Утилиты для логирования с loguru
 """
 
-# Импорт основной функциональности
-# Импорт из uuid_bigint_incr
+# Импорт функциональности:
 from .uuid_bigint_incr import uuid_gen, uuid_test_performance
-
-# Импортируем класс коннектора async_clickhouse
 from .db_async_clickhouse import async_clickhouse
+from .logging_utils import setup_logging, logger, log_message_secret
 
 # Версия пакета
-__version__ = "0.0.3"  # Формат: MAJOR.MINOR.PATCH
+__version__ = "0.0.4"  # Формат: MAJOR.MINOR.PATCH
 
 # Определяем, что будет импортировано при from libdixpy import *
 __all__ = [
@@ -25,4 +24,8 @@ __all__ = [
     'uuid_test_performance',
 
     'async_clickhouse',
+
+    'setup_logging',
+    'logger',
+    'log_message_secret',
 ]

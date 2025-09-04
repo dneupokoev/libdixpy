@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-#
-# асинхронный коннектор для ClickHouse
-#
-# Использование модуля:
-# from libdixpy import async_clickhouse
-# или
-# import libdixpy
-# connector = libdixpy.async_clickhouse(config)
+# libdixpy/db_async_clickhouse.py
+"""
+Асинхронный коннектор для ClickHouse
+
+Использование модуля:
+from libdixpy import async_clickhouse
+или
+import libdixpy
+connector = libdixpy.async_clickhouse(config)
+"""
 #
 dv_file_version = '250901.01'
 #

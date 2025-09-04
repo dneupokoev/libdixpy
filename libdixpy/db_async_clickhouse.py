@@ -10,7 +10,7 @@ import libdixpy
 connector = libdixpy.async_clickhouse(config)
 """
 #
-dv_file_version = '250901.01'
+dv_file_version = '250904.01'
 #
 import aiohttp
 import numpy as np
@@ -18,6 +18,7 @@ import pandas as pd
 from io import StringIO
 from typing import Dict, Optional, Tuple
 import json
+import csv
 import chardet  # для автоопределения кодировки
 
 
@@ -180,14 +181,14 @@ class async_clickhouse:
         return await self._make_request(sql)
 
     async def insert_df(self, table_name: str, df: pd.DataFrame,
-                        format: str = 'CSV', truncate_first: bool = False) -> Dict:
+                        truncate_first: bool = False, format: str = 'JSONEachRow') -> Dict:
         """
         Вставка DataFrame
 
         :param table_name: db.table
         :param df: DataFrame
-        :param format: CSV или JSONEachRow
-        :param truncate_first: Если True, перед вставкой выполнит TRUNCATE TABLE. По умолчанию False.
+        :param truncate_first: Если True, перед вставкой выполнит TRUNCATE TABLE
+        :param format: CSV или JSONEachRow (по умолчанию JSONEachRow - более безопасный)
         :return: {'status': 'SUCCESS/ERROR', 'message': '', 'rows': N}
         """
         if df.empty:
@@ -202,36 +203,61 @@ class async_clickhouse:
                         'message': f"Ошибка TRUNCATE перед вставкой: {truncate_result['message']}",
                         'rows': 0
                     }
-            #
-            # Подготовка данных
+
+            # Подготовка данных - заменяем все NaN/NaT на None
             df_clean = df.replace({np.nan: None, pd.NaT: None})
-            #
-            if format.upper() == 'CSV':
+            format_upper = format.upper()
+
+            if format_upper == 'CSV':
+                # Для CSV используем безопасное экранирование
                 with StringIO() as buffer:
                     df_clean.to_csv(
                         buffer,
                         index=False,
                         header=False,
-                        date_format='%Y-%m-%d %H:%M:%S'
+                        date_format='%Y-%m-%d %H:%M:%S',
+                        quoting=csv.QUOTE_ALL,  # Экранируем все значения в кавычки
+                        escapechar='\\',  # Экранирующий символ
+                        doublequote=False  # Не удваивать кавычки
                     )
                     data = buffer.getvalue()
-            elif format.upper() == 'JSONEACHROW':
-                data = '\n'.join(
-                    json.dumps(row, default=str)
-                    for row in df_clean.to_dict('records')
-                )
+
+            elif format_upper == 'JSONEACHROW':
+                # Безопасное формирование JSONEachRow
+                records = []
+                for record in df_clean.to_dict('records'):
+                    # Очищаем значения от None и преобразуем специальные типы
+                    cleaned_record = {}
+                    for key, value in record.items():
+                        if value is None:
+                            cleaned_record[key] = None
+                        elif isinstance(value, (pd.Timestamp, np.datetime64)):
+                            cleaned_record[key] = value.isoformat()
+                        elif isinstance(value, (pd.DataFrame, pd.Series)):
+                            # Сложные объекты преобразуем в строку
+                            cleaned_record[key] = str(value)
+                        else:
+                            cleaned_record[key] = value
+
+                    records.append(json.dumps(cleaned_record, ensure_ascii=False))
+
+                data = '\n'.join(records)
+
             else:
                 return {
                     'status': 'ERROR',
-                    'message': f'Неподдерживаемый формат: {format}',
+                    'message': f'Неподдерживаемый формат: {format}. Используйте CSV или JSONEachRow',
                     'rows': 0
                 }
+
             return await self.insert_data(table_name, data, format)
 
         except Exception as e:
+            error_msg = f"insert_df - Ошибка подготовки данных: {str(e)}"
+            print(f"ERROR: {error_msg}")
             return {
                 'status': 'ERROR',
-                'message': f"insert_df - Ошибка подготовки данных: {str(e)}",
+                'message': error_msg,
                 'rows': 0
             }
 

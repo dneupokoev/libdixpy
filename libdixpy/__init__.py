@@ -14,7 +14,7 @@ from .db_async_clickhouse import async_clickhouse
 from .logging_utils import setup_logging, logger, log_message_secret
 
 # Версия пакета
-__version__ = "0.0.5"  # Формат: MAJOR.MINOR.PATCH
+__version__ = "0.0.6"  # Формат: MAJOR.MINOR.PATCH
 
 # Определяем, что будет импортировано при from libdixpy import *
 __all__ = [

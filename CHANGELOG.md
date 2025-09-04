@@ -1,3 +1,9 @@
+## [0.0.6] - 2025-09-04
+
+### Fixed
+
+- Переписал insert_df в `db_async_clickhouse` на использование JSONEachRow (по умолчанию JSONEachRow - это безопаснее, чем CSV)
+
 ## [0.0.5] - 2025-09-04
 
 ### Fixed

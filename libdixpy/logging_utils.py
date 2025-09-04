@@ -23,7 +23,7 @@ logger.debug("Отладочная информация")
 logger.error("Ошибка в приложении")
 """
 #
-dv_file_version = '250904.01'
+dv_file_version = '250904.02'
 #
 import re
 import sys
@@ -31,8 +31,10 @@ import datetime
 from loguru import logger
 
 # Предкомпилируем регулярное выражение для максимальной производительности
+# Измененное регулярное выражение: захватываем только значения после ключей
 _SECRET_PATTERN = re.compile(
-    r"[']?(?:atok[\w]+|token[\w]+|passw[\w]+|pswd[\w]+)[']?[:=\s]+[']([^']*)[']"
+    r"(['\"]?(?:atok[\w]*|token[\w]*|passw[\w]*|pswd[\w]*)['\"]?\s*[:=\s]\s*['\"])([^'\"]*)(['\"])",
+    re.IGNORECASE
 )
 
 
@@ -65,7 +67,7 @@ def log_message_secret(message: str):
     """
     Функция скрывает конфиденциальную информацию в строке, например такую конструкцию {'my_token': '1111111'} на такую {'my_token': 'secret'}
     """
-    return _SECRET_PATTERN.sub(r"'\1': 'secret'", message)
+    return _SECRET_PATTERN.sub(r"\1secret\3", message)
 
 
 def log_format_secret(record):

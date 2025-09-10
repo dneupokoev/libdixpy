@@ -3,18 +3,20 @@
 libdixpy - Библиотека с различными утилитами для собственных проектов.
 
 Основные модули:
-    uuid_bigint_incr - Генератор 18-значных UUID с временнОй меткой
-    db_async_clickhouse - Асинхронный коннектор для ClickHouse
-    logging_utils - Утилиты для логирования с loguru
+    - uuid_bigint_incr - Генератор 18-значных UUID с временнОй меткой
+    - db_async_clickhouse - Асинхронный коннектор для ClickHouse
+    - logging_utils - Утилиты для логирования с loguru
+    - dfunc - Универсальные функции для всего на свете
 """
 
 # Импорт функциональности:
 from .uuid_bigint_incr import uuid_gen, uuid_test_performance
 from .db_async_clickhouse import async_clickhouse
 from .logging_utils import setup_logging, logger, log_message_secret
+from .dfunc import *
 
 # Версия пакета
-__version__ = "0.0.6"  # Формат: MAJOR.MINOR.PATCH
+__version__ = "0.0.7"  # Формат: MAJOR.MINOR.PATCH
 
 # Определяем, что будет импортировано при from libdixpy import *
 __all__ = [
@@ -28,4 +30,15 @@ __all__ = [
     'setup_logging',
     'logger',
     'log_message_secret',
+
+    'check_eval',
+    'replace_none_to_default',
+    'replace_dict_none_with_empty_str',
+    'get_os_free_memory',
+    'is_int',
+    'is_list',
+    'string2int',
+    'string2list',
+    'is_dict',
+    'format_url',
 ]

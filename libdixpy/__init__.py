@@ -31,6 +31,7 @@ __all__ = [
     'logger',
     'log_message_secret',
 
+    # Все функции из dfunc
     'check_eval',
     'replace_none_to_default',
     'replace_dict_none_with_empty_str',
@@ -41,4 +42,12 @@ __all__ = [
     'string2list',
     'is_dict',
     'format_url',
+    'get_domain',
+    'string2dict',
+    'get_data_from_request',
+    'is_url',
+    'add_utm_to_url',
+    'generate_random_string',
+    'unpickle_dict',
+    'escape_sql_value'
 ]

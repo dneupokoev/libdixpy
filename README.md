@@ -10,6 +10,9 @@
 pip install git+https://github.com/dneupokoev/libdixpy.git
 
 для pipenv:
+pipenv install git+https://github.com/dneupokoev/libdixpy.git
+
+если не надо, чтобы появился в Pipfile: 
 pipenv run pip install git+https://github.com/dneupokoev/libdixpy.git
 ```
 

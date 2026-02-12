@@ -46,7 +46,24 @@ from libdixpy.bitrix24 import Bitrix24ChatSafeSender
 # Инициализация
 sender = Bitrix24ChatSafeSender("https://your.bitrix24.ru/rest/1/token/")
 
-# Отправка изображения
+# Отправка текстового сообщения:
+sender.send_message("chat123", "Привет!")
+
+# Отправка отформатированного текстового сообщения:
+sender.send_message(
+    dialog_id="chat123",
+    message="""
+    [B]ВАЖНОЕ УВЕДОМЛЕНИЕ[/B]
+
+    [U]Детали:[/U]
+    • Проект завершён
+    • [COLOR=#00aa00]Статус: выполнено[/COLOR]
+
+    [I]С уважением, команда[/I]
+    """
+)
+
+# Отправка изображения:
 with open("image.png", "rb") as f:
     image_bytes = BytesIO(f.read())
     sender.send_image_to_chat(
@@ -55,7 +72,4 @@ with open("image.png", "rb") as f:
         filename="image.png",
         caption="Подпись к изображению"
     )
-
-# Отправка текстового сообщения
-sender.send_message("chat123", "Привет!")
 ```

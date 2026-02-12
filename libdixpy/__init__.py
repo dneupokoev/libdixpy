@@ -14,9 +14,10 @@ from .uuid_bigint_incr import uuid_gen, uuid_test_performance
 from .db_async_clickhouse import async_clickhouse
 from .logging_utils import setup_logging, logger, log_message_secret
 from .dfunc import *
+from .bitrix24 import *
 
 # Версия пакета
-__version__ = "0.0.7"  # Формат: MAJOR.MINOR.PATCH
+__version__ = "0.0.8"  # Формат: MAJOR.MINOR.PATCH
 
 # Определяем, что будет импортировано при from libdixpy import *
 __all__ = [
@@ -30,6 +31,8 @@ __all__ = [
     'setup_logging',
     'logger',
     'log_message_secret',
+
+    'bitrix24',
 
     # Все функции из dfunc
     'check_eval',

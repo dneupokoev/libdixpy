@@ -9,6 +9,7 @@ pandas = "*"
 chardet = "*"
 aiohttp = "*"
 loguru = "*"
+requests = "*"
 
 [dev-packages]
 

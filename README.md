@@ -39,6 +39,7 @@ pipenv run pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
 
 Модуль для работы с Bitrix24 REST API. Позволяет отправлять файлы и изображения
 напрямую в папку чата с автоматическим управлением правами доступа.
+⚠️ **Внимание:** модуль работает только в синхронном режиме и асинхронная поддержка не планируется.
 
 ```python
 from io import BytesIO

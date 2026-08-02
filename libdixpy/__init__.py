@@ -3,10 +3,11 @@
 libdixpy - Библиотека с различными утилитами для собственных проектов.
 
 Основные модули:
-    - uuid_bigint_incr - Генератор 18-значных UUID с временнОй меткой
+    - uuid_bigint_incr - Генератор 18-значных UUID с временной меткой
     - db_async_clickhouse - Асинхронный коннектор для ClickHouse
     - logging_utils - Утилиты для логирования с loguru
     - dfunc - Универсальные функции для всего на свете
+    - bitrix24 - Отправка сообщений и файлов в Bitrix24 чаты (только синхронно)
 """
 
 # Импорт функциональности:
@@ -14,7 +15,7 @@ from .uuid_bigint_incr import uuid_gen, uuid_test_performance
 from .db_async_clickhouse import async_clickhouse
 from .logging_utils import setup_logging, logger, log_message_secret
 from .dfunc import *
-from .bitrix24 import *
+from .bitrix24.sender import Bitrix24ChatSafeSender
 
 # Версия пакета
 __version__ = "0.0.8"  # Формат: MAJOR.MINOR.PATCH
@@ -32,7 +33,7 @@ __all__ = [
     'logger',
     'log_message_secret',
 
-    'bitrix24',
+    'Bitrix24ChatSafeSender',
 
     # Все функции из dfunc
     'check_eval',

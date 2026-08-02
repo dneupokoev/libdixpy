@@ -5,10 +5,9 @@ Bitrix24 Chat-Safe Sender Module
 Использует метод im.disk.folder.get
 """
 #
-dv_file_version = '260212.02'
+dv_file_version = '260212.01'
 #
-import asyncio
-import aiohttp
+import requests
 import json
 from typing import Optional, Dict, Any
 from pathlib import Path
@@ -18,97 +17,51 @@ from loguru import logger
 
 class Bitrix24ChatSafeSender:
     """
-    Отправка изображений напрямую в папку чата.
-    Файлы автоматически доступны всем участникам чата.
+    Отправка изображений напрямую в папку чата
+    Файлы автоматически доступны всем участникам чата
     """
 
-    def __init__(self, webhook_url: str) -> None:
+    def __init__(self, webhook_url: str):
         """
-        Инициализация отправщика Bitrix24
-        
-        Args:
-            webhook_url: URL вебхука Bitrix24
+        :param webhook_url: URL вебхука Bitrix24
         """
         self.webhook_url = webhook_url.rstrip('/')
-        self.session: Optional[aiohttp.ClientSession] = None
+        self.session = requests.Session()
+        self.session.timeout = 15
 
         if not self.webhook_url.startswith(('http://', 'https://')):
             raise ValueError("Некорректный формат вебхука Bitrix24")
 
         logger.info(f"bitrix24_sender - ✅ Bitrix24ChatSafeSender инициализирован")
 
-    def __enter__(self) -> 'Bitrix24ChatSafeSender':
-        """Синхронный контекстный менеджер для обратной совместимости"""
-        self.session = aiohttp.ClientSession()
-        return self
-
-    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
-        if self.session:
-            try:
-                asyncio.get_running_loop()
-                logger.warning("bitrix24_sender - ⚠️ Синхронный контекстный менеджер вызван внутри async-кода. Сессия будет закрыта асинхронно.")
-            except RuntimeError:
-                asyncio.run(self.session.close())
-            self.session = None
-
-    async def __aenter__(self) -> 'Bitrix24ChatSafeSender':
-        return self.__enter__()
-
-    async def __aexit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
-        if self.session:
-            await self.session.close()
-            self.session = None
-
-    async def _call_api(self, method: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Универсальный метод вызова REST API Bitrix24
-        
-        Args:
-            method: Название метода API
-            params: Параметры запроса
-            
-        Returns:
-            Результат вызова API или пустой словарь при ошибке
-        """
-        if not self.session:
-            logger.error("bitrix24_sender - ❌ Сессия не инициализирована")
-            return {}
-
+    def _call_api(self, method: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Универсальный метод вызова REST API Bitrix24"""
         url = f"{self.webhook_url}/{method}.json"
 
         try:
-            async with self.session.post(url, json=params) as response:
-                response.raise_for_status()
-                result = await response.json()
+            response = self.session.post(url, json=params, timeout=15)
+            response.raise_for_status()
+            result = response.json()
 
-                if not result.get('result'):
-                    error_msg = result.get('error_description', result.get('error', 'Unknown error'))
-                    logger.error(f"bitrix24_sender - ❌ Bitrix24 API error ({method}): {error_msg}")
-                    return {}
+            if not result.get('result'):
+                error_msg = result.get('error_description', result.get('error', 'Unknown error'))
+                logger.error(f"bitrix24_sender - ❌ Bitrix24 API error ({method}): {error_msg}")
+                return {}
 
-                logger.debug(f"bitrix24_sender - ✓ API {method} успешно")
-                return result
+            logger.debug(f"bitrix24_sender - ✓ API {method} успешно")
+            return result
 
-        except aiohttp.ClientError as e:
+        except requests.exceptions.RequestException as e:
             logger.error(f"bitrix24_sender - ❌ Сеть ({method}): {e}")
             return {}
         except json.JSONDecodeError as e:
             logger.error(f"bitrix24_sender - ❌ JSON ({method}): {e}")
             return {}
 
-    async def send_message(self, dialog_id: str, message: str) -> bool:
-        """
-        Отправка текстового сообщения в диалог
-        
-        Args:
-            dialog_id: ID диалога
-            message: Текст сообщения
-            
-        Returns:
-            True при успешной отправке, False иначе
-        """
+    def send_message(self, dialog_id: str, message: str) -> bool:
+        """Отправка текстового сообщения в диалог"""
         params = {'DIALOG_ID': dialog_id, 'MESSAGE': message}
-        result = await self._call_api('im.message.add', params)
+        result = self._call_api('im.message.add', params)
         success = bool(result.get('result'))
 
         if success:
@@ -117,17 +70,9 @@ class Bitrix24ChatSafeSender:
             logger.warning(f"bitrix24_sender - ❌ Не удалось отправить текст в {dialog_id}")
         return success
 
-    async def get_chat_folder_id(self, dialog_id: str) -> Optional[int]:
-        """
-        Получение ID папки чата через im.disk.folder.get
-        
-        Args:
-            dialog_id: ID диалога
-            
-        Returns:
-            ID папки или None при ошибке
-        """
-        result = await self._call_api('im.disk.folder.get', {'DIALOG_ID': dialog_id})
+    def get_chat_folder_id(self, dialog_id: str) -> Optional[int]:
+        """Получение ID папки чата через im.disk.folder.get"""
+        result = self._call_api('im.disk.folder.get', {'DIALOG_ID': dialog_id})
 
         if result and result.get('result'):
             folder_id = result['result'].get('ID')
@@ -138,22 +83,8 @@ class Bitrix24ChatSafeSender:
         logger.error(f"bitrix24_sender - ❌ Не удалось получить папку чата {dialog_id}")
         return None
 
-    async def upload_file_to_folder(self, folder_id: int, file_bytes: BytesIO, filename: str) -> Optional[int]:
-        """
-        Загрузка файла в указанную папку на Диске
-        
-        Args:
-            folder_id: ID папки
-            file_bytes: Данные файла
-            filename: Имя файла
-            
-        Returns:
-            ID загруженного файла или None при ошибке
-        """
-        if not self.session:
-            logger.error("bitrix24_sender - ❌ Сессия не инициализирована")
-            return None
-
+    def upload_file_to_folder(self, folder_id: int, file_bytes: BytesIO, filename: str) -> Optional[int]:
+        """Загрузка файла в указанную папку на Диске"""
         file_content = file_bytes.getvalue()
         content_size = len(file_content)
 
@@ -161,13 +92,14 @@ class Bitrix24ChatSafeSender:
 
         # --- Этап 1: Получение uploadUrl ---
         try:
-            async with self.session.post(
+            response = self.session.post(
                 f"{self.webhook_url}/disk.folder.uploadfile.json",
-                data={'id': folder_id, 'data': json.dumps({'NAME': filename, 'SIZE': content_size})}
-            ) as response:
-                result = await response.json()
-                upload_url = result['result']['uploadUrl']
-                logger.debug("bitrix24_sender - ✓ uploadUrl получен")
+                data={'id': folder_id, 'data': json.dumps({'NAME': filename, 'SIZE': content_size})},
+                timeout=15
+            )
+            result = response.json()
+            upload_url = result['result']['uploadUrl']
+            logger.debug("bitrix24_sender - ✓ uploadUrl получен")
         except Exception as e:
             logger.error(f"bitrix24_sender - ❌ Ошибка получения uploadUrl: {e}")
             return None
@@ -182,55 +114,45 @@ class Bitrix24ChatSafeSender:
                 '.pdf': 'application/pdf', '.txt': 'text/plain'
             }.get(ext, 'application/octet-stream')
 
-            form = aiohttp.FormData()
-            form.add_field('file', file_content, filename=filename, content_type=mime_type)
+            response = self.session.post(
+                upload_url,
+                files={'file': (filename, file_content, mime_type)},
+                timeout=30
+            )
+            result = response.json()
 
-            async with self.session.post(upload_url, data=form) as response:
-                result = await response.json()
+            if response.status_code == 200 and isinstance(result.get('result'), dict):
+                upload_id = result['result'].get('ID')
+                if upload_id:
+                    logger.info(f"bitrix24_sender - ✅ Файл загружен, UPLOAD_ID: {upload_id}")
+                    return int(upload_id)
 
-                if response.status == 200 and isinstance(result.get('result'), dict):
-                    upload_id = result['result'].get('ID')
-                    if upload_id:
-                        logger.info(f"bitrix24_sender - ✅ Файл загружен, UPLOAD_ID: {upload_id}")
-                        return int(upload_id)
-
-                logger.error(f"bitrix24_sender - ❌ Ошибка загрузки файла")
-                return None
+            logger.error(f"bitrix24_sender - ❌ Ошибка загрузки файла")
+            return None
         except Exception as e:
             logger.error(f"bitrix24_sender - ❌ Ошибка загрузки: {e}")
             return None
 
-    async def send_file_to_chat(self, dialog_id: str, file_bytes: BytesIO, filename: str, caption: str = '') -> bool:
-        """
-        Отправка файла в чат с использованием папки чата
-        
-        Args:
-            dialog_id: ID диалога
-            file_bytes: Данные файла
-            filename: Имя файла
-            caption: Подпись к файлу
-            
-        Returns:
-            True при успешной отправке, False иначе
-        """
+    def send_file_to_chat(self, dialog_id: str, file_bytes: BytesIO, filename: str, caption: str = '') -> bool:
+        """Отправка файла в чат с использованием папки чата"""
         logger.info(f"bitrix24_sender - 📎 Отправка файла в {dialog_id}")
 
         # Шаг 1: Получаем ID папки чата
-        chat_folder_id = await self.get_chat_folder_id(dialog_id)
+        chat_folder_id = self.get_chat_folder_id(dialog_id)
         if not chat_folder_id:
             logger.error("bitrix24_sender - ❌ Папка чата не получена")
-            await self.send_message(dialog_id, f"{caption}\n⚠️ Ошибка папки чата")
+            self.send_message(dialog_id, f"{caption}\n⚠️ Ошибка папки чата")
             return False
 
         # Шаг 2: Загружаем файл в папку чата
-        upload_id = await self.upload_file_to_folder(chat_folder_id, file_bytes, filename)
+        upload_id = self.upload_file_to_folder(chat_folder_id, file_bytes, filename)
         if not upload_id:
             logger.error("bitrix24_sender - ❌ Загрузка файла не удалась")
-            await self.send_message(dialog_id, f"{caption}\n⚠️ Ошибка загрузки")
+            self.send_message(dialog_id, f"{caption}\n⚠️ Ошибка загрузки")
             return False
 
         # Шаг 3: Отправляем файл в чат
-        result = await self._call_api('im.disk.file.commit', {
+        result = self._call_api('im.disk.file.commit', {
             'DIALOG_ID': dialog_id,
             'MESSAGE': caption,
             'UPLOAD_ID': upload_id
@@ -241,44 +163,9 @@ class Bitrix24ChatSafeSender:
             return True
         else:
             logger.error(f"bitrix24_sender - ❌ Ошибка прикрепления файла")
-            await self.send_message(dialog_id, f"{caption}\n⚠️ Ошибка прикрепления")
+            self.send_message(dialog_id, f"{caption}\n⚠️ Ошибка прикрепления")
             return False
 
-    async def send_image_to_chat(self, dialog_id: str, image_bytes: BytesIO, filename: str, caption: str = '') -> bool:
-        """
-        Отправка изображения в чат
-        
-        Args:
-            dialog_id: ID диалога
-            image_bytes: Данные изображения
-            filename: Имя файла
-            caption: Подпись к изображению
-            
-        Returns:
-            True при успешной отправке, False иначе
-        """
-        return await self.send_file_to_chat(dialog_id, image_bytes, filename, caption)
-
-    # --- Синхронные обёртки для обратной совместимости ---
-
-    def _run_sync(self, coro):
-        """Выполняет корутину синхронно, если не запущен event loop"""
-        try:
-            asyncio.get_running_loop()
-            raise RuntimeError("Метод вызван из асинхронного контекста. Используйте await.")
-        except RuntimeError as e:
-            if "no running event loop" in str(e):
-                return asyncio.run(coro)
-            raise
-
-    def send_message_sync(self, dialog_id: str, message: str) -> bool:
-        """Синхронная отправка текстового сообщения"""
-        return self._run_sync(self.send_message(dialog_id, message))
-
-    def send_file_to_chat_sync(self, dialog_id: str, file_bytes: BytesIO, filename: str, caption: str = '') -> bool:
-        """Синхронная отправка файла в чат"""
-        return self._run_sync(self.send_file_to_chat(dialog_id, file_bytes, filename, caption))
-
-    def send_image_to_chat_sync(self, dialog_id: str, image_bytes: BytesIO, filename: str, caption: str = '') -> bool:
-        """Синхронная отправка изображения в чат"""
-        return self._run_sync(self.send_image_to_chat(dialog_id, image_bytes, filename, caption))
+    def send_image_to_chat(self, dialog_id: str, image_bytes: BytesIO, filename: str, caption: str = '') -> bool:
+        """Отправка изображения в чат"""
+        return self.send_file_to_chat(dialog_id, image_bytes, filename, caption)

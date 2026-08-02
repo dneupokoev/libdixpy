@@ -18,7 +18,7 @@ from .dfunc import *
 from .bitrix24.sender import Bitrix24ChatSafeSender
 
 # Версия пакета
-__version__ = "0.0.8"  # Формат: MAJOR.MINOR.PATCH
+__version__ = "0.0.9"  # Формат: MAJOR.MINOR.PATCH
 
 # Определяем, что будет импортировано при from libdixpy import *
 __all__ = [

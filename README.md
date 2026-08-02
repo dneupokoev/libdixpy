@@ -37,8 +37,10 @@ pipenv run pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
 
 ### bitrix24
 
-Асинхронная отправка сообщений и файлов в чаты Bitrix24.
+Асинхронная и синхронная отправка сообщений и файлов в чаты Bitrix24.
+Поддерживает полную обратную совместимость: старый код продолжит работать без изменений.
 
+**Асинхронное использование (рекомендуется):**
 ```python
 import asyncio
 from io import BytesIO
@@ -48,16 +50,8 @@ async def main():
     webhook_url = "https://your.bitrix24.ru/rest/1/token/"
     
     async with Bitrix24ChatSafeSender(webhook_url) as sender:
-        # Отправка текстового сообщения
         await sender.send_message("chat123", "Привет!")
-
-        # Отправка отформатированного сообщения
-        await sender.send_message(
-            dialog_id="chat123",
-            message="[B]ВАЖНО[/B]\n[U]Детали:[/U]\n• Проект завершён"
-        )
-
-        # Отправка изображения
+        
         with open("image.png", "rb") as f:
             image_bytes = BytesIO(f.read())
             await sender.send_image_to_chat(
@@ -68,6 +62,28 @@ async def main():
             )
 
 asyncio.run(main())
+```
+
+**Синхронное использование (обратная совместимость):**
+```python
+from io import BytesIO
+from libdixpy.bitrix24 import Bitrix24ChatSafeSender
+
+webhook_url = "https://your.bitrix24.ru/rest/1/token/"
+
+# Работает как обычный контекстный менеджер
+with Bitrix24ChatSafeSender(webhook_url) as sender:
+    # Методы с суффиксом _sync выполняют запросы синхронно
+    sender.send_message_sync("chat123", "Привет!")
+    
+    with open("image.png", "rb") as f:
+        image_bytes = BytesIO(f.read())
+        sender.send_image_to_chat_sync(
+            dialog_id="chat123",
+            image_bytes=image_bytes,
+            filename="image.png",
+            caption="Подпись к изображению"
+        )
 ```
 
 ### db_async_clickhouse

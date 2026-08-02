@@ -7,6 +7,7 @@ Bitrix24 Chat-Safe Sender Module
 #
 dv_file_version = '260212.02'
 #
+import asyncio
 import aiohttp
 import json
 from typing import Optional, Dict, Any
@@ -36,9 +37,18 @@ class Bitrix24ChatSafeSender:
 
         logger.info(f"bitrix24_sender - ✅ Bitrix24ChatSafeSender инициализирован")
 
-    async def __aenter__(self) -> 'Bitrix24ChatSafeSender':
+    def __enter__(self) -> 'Bitrix24ChatSafeSender':
+        """Синхронный контекстный менеджер для обратной совместимости"""
         self.session = aiohttp.ClientSession()
         return self
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        if self.session:
+            asyncio.run(self.session.close())
+            self.session = None
+
+    async def __aenter__(self) -> 'Bitrix24ChatSafeSender':
+        return self.__enter__()
 
     async def __aexit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
         if self.session:
@@ -244,3 +254,27 @@ class Bitrix24ChatSafeSender:
             True при успешной отправке, False иначе
         """
         return await self.send_file_to_chat(dialog_id, image_bytes, filename, caption)
+
+    # --- Синхронные обёртки для обратной совместимости ---
+
+    def _run_sync(self, coro):
+        """Выполняет корутину синхронно, если не запущен event loop"""
+        try:
+            asyncio.get_running_loop()
+            raise RuntimeError("Метод вызван из асинхронного контекста. Используйте await.")
+        except RuntimeError as e:
+            if "no running event loop" in str(e):
+                return asyncio.run(coro)
+            raise
+
+    def send_message_sync(self, dialog_id: str, message: str) -> bool:
+        """Синхронная отправка текстового сообщения"""
+        return self._run_sync(self.send_message(dialog_id, message))
+
+    def send_file_to_chat_sync(self, dialog_id: str, file_bytes: BytesIO, filename: str, caption: str = '') -> bool:
+        """Синхронная отправка файла в чат"""
+        return self._run_sync(self.send_file_to_chat(dialog_id, file_bytes, filename, caption))
+
+    def send_image_to_chat_sync(self, dialog_id: str, image_bytes: BytesIO, filename: str, caption: str = '') -> bool:
+        """Синхронная отправка изображения в чат"""
+        return self._run_sync(self.send_image_to_chat(dialog_id, image_bytes, filename, caption))

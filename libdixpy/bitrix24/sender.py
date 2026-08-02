@@ -44,7 +44,11 @@ class Bitrix24ChatSafeSender:
 
     def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
         if self.session:
-            asyncio.run(self.session.close())
+            try:
+                asyncio.get_running_loop()
+                logger.warning("bitrix24_sender - ⚠️ Синхронный контекстный менеджер вызван внутри async-кода. Сессия будет закрыта асинхронно.")
+            except RuntimeError:
+                asyncio.run(self.session.close())
             self.session = None
 
     async def __aenter__(self) -> 'Bitrix24ChatSafeSender':

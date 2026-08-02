@@ -7,21 +7,23 @@
 Установка непосредственно из GitHub:
 
 ```bash
+# Стандартная установка
 pip install git+https://github.com/dneupokoev/libdixpy.git
 
-для pipenv:
+# Для pipenv (добавит в Pipfile)
 pipenv install git+https://github.com/dneupokoev/libdixpy.git
 
-если не надо, чтобы появился в Pipfile: 
+# Для pipenv (без добавления в Pipfile)
 pipenv run pip install git+https://github.com/dneupokoev/libdixpy.git
 ```
 
 Обновить пакет в проекте:
 
 ```bash
+# Стандартное обновление
 pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
 
-для pipenv:
+# Для pipenv
 pipenv run pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
 ```
 
@@ -63,6 +65,16 @@ sender.send_message(
     [I]С уважением, команда[/I]
     """
 )
+
+# Отправка файла:
+with open("document.pdf", "rb") as f:
+    file_bytes = BytesIO(f.read())
+    sender.send_file_to_chat(
+        dialog_id="chat123",
+        file_bytes=file_bytes,
+        filename="document.pdf",
+        caption="Документ для ознакомления"
+    )
 
 # Отправка изображения:
 with open("image.png", "rb") as f:
@@ -129,13 +141,23 @@ async with async_clickhouse(config) as ch:
 Утилиты для настройки логирования, ротации файлов по размеру/времени и маскировки секретов.
 
 ```python
-from libdixpy.logging_utils import setup_logging, LogRotator
+import logging
+from libdixpy.logging_utils import setup_logging, LogRotator, log_message_secret
 
 # Базовая настройка логирования
 logger = setup_logging(log_level='INFO', app_name='my_app', path_to_log='./logs')
 
 # Ротация логов (по размеру 10MB или по времени)
 rotator = LogRotator(size=10 * 1024 * 1024, at='00:00')
+
+# Проверка необходимости ротации перед записью
+if rotator.should_rotate(message="test", file="./logs/app.log"):
+    # логика ротации
+    pass
+
+# Маскировка секретов в логах (например, токенов или паролей)
+secret_msg = log_message_secret("Token: abc123secret456")
+logger.info(secret_msg)
 ```
 
 ### dfunc
@@ -144,19 +166,22 @@ rotator = LogRotator(size=10 * 1024 * 1024, at='00:00')
 
 ```python
 from libdixpy.dfunc import (
-    string2int, string2list, string2dict,
-    is_url, format_url, add_utm_to_url,
+    string2int, string2list, string2dict, is_dict,
+    is_url, format_url, get_domain, add_utm_to_url,
     generate_random_string, escape_sql_value,
-    replace_none_to_default
+    replace_none_to_default, replace_dict_none_with_empty_str,
+    get_os_free_memory, check_eval
 )
 
 # Парсинг строк в типы
 val = string2int("123", default=0)
 lst = string2list("[1, 2, 3]")
 dct = string2dict('{"key": "value"}')
+is_dict_check = is_dict('{"a": 1}')
 
 # Работа с URL
 url = format_url("https://example.com")
+domain = get_domain("https://example.com/path")
 url_with_utm = add_utm_to_url(url, utm_name="source", utm_val="github")
 is_valid = is_url("https://google.com")
 
@@ -164,4 +189,9 @@ is_valid = is_url("https://google.com")
 rand_str = generate_random_string(length=16)
 safe_val = escape_sql_value("user's input")
 cleaned = replace_none_to_default(None, default="empty")
+clean_dict = replace_dict_none_with_empty_str({"a": None, "b": "val"})
+
+# Системные и другие утилиты
+free_mem = get_os_free_memory()
+can_eval = check_eval("1 + 1")
 ```

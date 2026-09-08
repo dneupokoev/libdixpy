@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10] - 2026-09-08
+### Added
+- Настраиваемый таймаут для API-запросов Bitrix24 (параметр `timeout` в `Bitrix24ChatSafeSender`)
+- Константы `DEFAULT_TIMEOUT=30` и `UPLOAD_TIMEOUT=60`
+### Changed
+- Загрузка файлов использует отдельный таймаут (`UPLOAD_TIMEOUT`)
+
 ## [0.0.9] - 2026-08-02
 ### Changed
 - Обновлены требования к Python (`>=3.10`) в `setup.py`

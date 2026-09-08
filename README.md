@@ -46,8 +46,8 @@ pipenv run pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
 from io import BytesIO
 from libdixpy.bitrix24 import Bitrix24ChatSafeSender
 
-# Инициализация
-sender = Bitrix24ChatSafeSender("https://your.bitrix24.ru/rest/1/token/")
+# Инициализация (timeout по умолчанию 30 сек, для загрузки файлов — 60 сек)
+sender = Bitrix24ChatSafeSender("https://your.bitrix24.ru/rest/1/token/", timeout=30)
 
 # Отправка текстового сообщения:
 sender.send_message("chat123", "Привет!")

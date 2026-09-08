@@ -6,8 +6,11 @@ Bitrix24 Chat-Safe Sender Module
 ⚠️ Модуль работает только в синхронном режиме и останется таким.
 """
 #
-dv_file_version = '260212.01'
+dv_file_version = '260908.01'
 #
+DEFAULT_TIMEOUT = 30
+UPLOAD_TIMEOUT = 60
+
 import requests
 import json
 from typing import Optional, Dict, Any
@@ -22,25 +25,27 @@ class Bitrix24ChatSafeSender:
     Файлы автоматически доступны всем участникам чата
     """
 
-    def __init__(self, webhook_url: str):
+    def __init__(self, webhook_url: str, timeout: int = DEFAULT_TIMEOUT):
         """
         :param webhook_url: URL вебхука Bitrix24
+        :param timeout: Таймаут для API-запросов в секундах (по умолчанию 30)
         """
         self.webhook_url = webhook_url.rstrip('/')
+        self.timeout = timeout
+        self.UPLOAD_TIMEOUT = UPLOAD_TIMEOUT
         self.session = requests.Session()
-        self.session.timeout = 15
 
         if not self.webhook_url.startswith(('http://', 'https://')):
             raise ValueError("Некорректный формат вебхука Bitrix24")
 
-        logger.info(f"bitrix24_sender - ✅ Bitrix24ChatSafeSender инициализирован")
+        logger.info(f"bitrix24_sender - ✅ Bitrix24ChatSafeSender инициализирован (timeout={timeout}s)")
 
     def _call_api(self, method: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """Универсальный метод вызова REST API Bitrix24"""
         url = f"{self.webhook_url}/{method}.json"
 
         try:
-            response = self.session.post(url, json=params, timeout=15)
+            response = self.session.post(url, json=params, timeout=self.timeout)
             response.raise_for_status()
             result = response.json()
 
@@ -96,7 +101,7 @@ class Bitrix24ChatSafeSender:
             response = self.session.post(
                 f"{self.webhook_url}/disk.folder.uploadfile.json",
                 data={'id': folder_id, 'data': json.dumps({'NAME': filename, 'SIZE': content_size})},
-                timeout=15
+                timeout=self.timeout
             )
             result = response.json()
             upload_url = result['result']['uploadUrl']
@@ -118,7 +123,7 @@ class Bitrix24ChatSafeSender:
             response = self.session.post(
                 upload_url,
                 files={'file': (filename, file_content, mime_type)},
-                timeout=30
+                timeout=self.UPLOAD_TIMEOUT
             )
             result = response.json()
 

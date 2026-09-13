@@ -1,8 +1,10 @@
-# libdixpy
+# 🐍 libdixpy
 
-Библиотека с различными утилитами для собственных проектов.
+> Библиотека с различными утилитами для собственных проектов.
 
-## Установка
+---
+
+## 📦 Установка
 
 Установка непосредственно из GitHub:
 
@@ -27,17 +29,21 @@ pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
 pipenv run pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
 ```
 
-## Модули
+## 🧩 Модули
 
-- `uuid_bigint_incr` — Генератор 18-значных UUID с временной меткой и инкрементом
-- `db_async_clickhouse` — Асинхронный коннектор для ClickHouse (вставка, запросы, DataFrame)
-- `logging_utils` — Утилиты для логирования с ротацией и маскировкой секретов
-- `dfunc` — Набор вспомогательных функций (парсинг, валидация, работа с URL, утилиты)
-- `bitrix24` — Отправка сообщений и файлов в Bitrix24 чаты
+| Модуль | Описание |
+|--------|----------|
+| `uuid_bigint_incr` | Генератор 18-значных UUID с временной меткой и инкрементом |
+| `db_async_clickhouse` | Асинхронный коннектор для ClickHouse (вставка, запросы, DataFrame) |
+| `logging_utils` | Утилиты для логирования с ротацией и маскировкой секретов |
+| `dfunc` | Набор вспомогательных функций (парсинг, валидация, работа с URL, утилиты) |
+| `bitrix24` | Отправка сообщений и файлов в Bitrix24 чаты |
 
-## Примеры работы с модулями:
+---
 
-### bitrix24
+## 🚀 Примеры работы с модулями
+
+### 💬 bitrix24
 
 Модуль для работы с Bitrix24 REST API. Позволяет отправлять файлы и изображения
 напрямую в папку чата с автоматическим управлением правами доступа.
@@ -87,10 +93,10 @@ with open("image.png", "rb") as f:
     )
 ```
 
-### uuid_bigint_incr
+### 🔢 uuid_bigint_incr
 
-Генератор уникальных 18-значных идентификаторов на основе Unix timestamp и инкремента.
-Поддерживает как синхронный, так и асинхронный режимы работы.
+> Генератор уникальных 18-значных идентификаторов на основе Unix timestamp и инкремента.
+> Поддерживает как **синхронный**, так и **асинхронный** режимы работы.
 
 ```python
 from libdixpy.uuid_bigint_incr import UUIDGenerator
@@ -104,10 +110,10 @@ uid_sync = gen.generate(_sync=True)
 # uid_async = await gen.generate()
 ```
 
-### db_async_clickhouse
+### 🗄️ db_async_clickhouse
 
-Асинхронный клиент для взаимодействия с ClickHouse. Поддерживает вставку данных,
-выполнение запросов и работу с `pandas.DataFrame`.
+> Асинхронный клиент для взаимодействия с ClickHouse. Поддерживает вставку данных,
+> выполнение запросов и работу с `pandas.DataFrame`.
 
 ```python
 import pandas as pd
@@ -136,9 +142,9 @@ async with async_clickhouse(config) as ch:
     await ch.execute_command("TRUNCATE TABLE my_table")
 ```
 
-### logging_utils
+### 📝 logging_utils
 
-Утилиты для настройки логирования, ротации файлов по размеру/времени и маскировки секретов.
+> Утилиты для настройки логирования, ротации файлов по размеру/времени и маскировки секретов.
 
 ```python
 import logging
@@ -164,9 +170,9 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 formatter.format = log_format_secret  # пример применения
 ```
 
-### dfunc
+### 🛠️ dfunc
 
-Набор универсальных вспомогательных функций для парсинга, валидации, работы с URL и другими задачами.
+> Набор универсальных вспомогательных функций для парсинга, валидации, работы с URL и другими задачами.
 
 ```python
 from libdixpy.dfunc import (

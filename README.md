@@ -142,7 +142,7 @@ async with async_clickhouse(config) as ch:
 
 ```python
 import logging
-from libdixpy.logging_utils import setup_logging, LogRotator, log_message_secret
+from libdixpy.logging_utils import setup_logging, LogRotator, log_message_secret, log_format_secret
 
 # Базовая настройка логирования
 logger = setup_logging(log_level='INFO', app_name='my_app', path_to_log='./logs')
@@ -158,6 +158,10 @@ if rotator.should_rotate(message="test", file="./logs/app.log"):
 # Маскировка секретов в логах (например, токенов или паролей)
 secret_msg = log_message_secret("Token: abc123secret456")
 logger.info(secret_msg)
+
+# Форматтер для автоматической маскировки секретов в записях лога
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter.format = log_format_secret  # пример применения
 ```
 
 ### dfunc
@@ -167,10 +171,11 @@ logger.info(secret_msg)
 ```python
 from libdixpy.dfunc import (
     string2int, string2list, string2dict, is_dict,
+    is_int, is_list,
     is_url, format_url, get_domain, add_utm_to_url,
     generate_random_string, escape_sql_value,
     replace_none_to_default, replace_dict_none_with_empty_str,
-    get_os_free_memory, check_eval
+    get_os_free_memory, check_eval, unpickle_dict
 )
 
 # Парсинг строк в типы
@@ -178,6 +183,8 @@ val = string2int("123", default=0)
 lst = string2list("[1, 2, 3]")
 dct = string2dict('{"key": "value"}')
 is_dict_check = is_dict('{"a": 1}')
+is_int_check = is_int("42")
+is_list_check = is_list("[1, 2]")
 
 # Работа с URL
 url = format_url("https://example.com")

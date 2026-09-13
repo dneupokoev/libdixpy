@@ -1,8 +1,10 @@
 # libdixpy
 
-Библиотека с различными утилитами для собственных проектов.
+> Библиотека с различными утилитами для собственных проектов.
 
-## Установка
+---
+
+## 📦 Установка
 
 Установка непосредственно из GitHub:
 
@@ -27,17 +29,21 @@ pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
 pipenv run pip install --upgrade git+https://github.com/dneupokoev/libdixpy.git
 ```
 
-## Модули
+## 🧩 Модули
 
-- `uuid_bigint_incr` — Генератор 18-значных UUID с временной меткой и инкрементом
-- `db_async_clickhouse` — Асинхронный коннектор для ClickHouse (вставка, запросы, DataFrame)
-- `logging_utils` — Утилиты для логирования с ротацией и маскировкой секретов
-- `dfunc` — Набор вспомогательных функций (парсинг, валидация, работа с URL, утилиты)
-- `bitrix24` — Отправка сообщений и файлов в Bitrix24 чаты
+| Модуль | Описание |
+|--------|----------|
+| `uuid_bigint_incr` | Генератор 18-значных UUID с временной меткой и инкрементом |
+| `db_async_clickhouse` | Асинхронный коннектор для ClickHouse (вставка, запросы, DataFrame) |
+| `logging_utils` | Утилиты для логирования с ротацией и маскировкой секретов |
+| `dfunc` | Набор вспомогательных функций (парсинг, валидация, работа с URL, утилиты) |
+| `bitrix24` | Отправка сообщений и файлов в Bitrix24 чаты |
 
-## Примеры работы с модулями:
+---
 
-### bitrix24
+## 🚀 Примеры работы с модулями
+
+### 💬 bitrix24
 
 Модуль для работы с Bitrix24 REST API. Позволяет отправлять файлы и изображения
 напрямую в папку чата с автоматическим управлением правами доступа.
@@ -87,10 +93,10 @@ with open("image.png", "rb") as f:
     )
 ```
 
-### uuid_bigint_incr
+### 🔢 uuid_bigint_incr
 
-Генератор уникальных 18-значных идентификаторов на основе Unix timestamp и инкремента.
-Поддерживает как синхронный, так и асинхронный режимы работы.
+> Генератор уникальных 18-значных идентификаторов на основе Unix timestamp и инкремента.
+> Поддерживает как **синхронный**, так и **асинхронный** режимы работы.
 
 ```python
 from libdixpy.uuid_bigint_incr import UUIDGenerator
@@ -104,10 +110,10 @@ uid_sync = gen.generate(_sync=True)
 # uid_async = await gen.generate()
 ```
 
-### db_async_clickhouse
+### 🗄️ db_async_clickhouse
 
-Асинхронный клиент для взаимодействия с ClickHouse. Поддерживает вставку данных,
-выполнение запросов и работу с `pandas.DataFrame`.
+> Асинхронный клиент для взаимодействия с ClickHouse. Поддерживает вставку данных,
+> выполнение запросов и работу с `pandas.DataFrame`.
 
 ```python
 import pandas as pd
@@ -136,13 +142,13 @@ async with async_clickhouse(config) as ch:
     await ch.execute_command("TRUNCATE TABLE my_table")
 ```
 
-### logging_utils
+### 📝 logging_utils
 
-Утилиты для настройки логирования, ротации файлов по размеру/времени и маскировки секретов.
+> Утилиты для настройки логирования, ротации файлов по размеру/времени и маскировки секретов.
 
 ```python
 import logging
-from libdixpy.logging_utils import setup_logging, LogRotator, log_message_secret
+from libdixpy.logging_utils import setup_logging, LogRotator, log_message_secret, log_format_secret
 
 # Базовая настройка логирования
 logger = setup_logging(log_level='INFO', app_name='my_app', path_to_log='./logs')
@@ -158,19 +164,24 @@ if rotator.should_rotate(message="test", file="./logs/app.log"):
 # Маскировка секретов в логах (например, токенов или паролей)
 secret_msg = log_message_secret("Token: abc123secret456")
 logger.info(secret_msg)
+
+# Форматтер для автоматической маскировки секретов в записях лога
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter.format = log_format_secret  # пример применения
 ```
 
-### dfunc
+### 🛠️ dfunc
 
-Набор универсальных вспомогательных функций для парсинга, валидации, работы с URL и другими задачами.
+> Набор универсальных вспомогательных функций для парсинга, валидации, работы с URL и другими задачами.
 
 ```python
 from libdixpy.dfunc import (
     string2int, string2list, string2dict, is_dict,
+    is_int, is_list,
     is_url, format_url, get_domain, add_utm_to_url,
     generate_random_string, escape_sql_value,
     replace_none_to_default, replace_dict_none_with_empty_str,
-    get_os_free_memory, check_eval
+    get_os_free_memory, check_eval, unpickle_dict
 )
 
 # Парсинг строк в типы
@@ -178,6 +189,8 @@ val = string2int("123", default=0)
 lst = string2list("[1, 2, 3]")
 dct = string2dict('{"key": "value"}')
 is_dict_check = is_dict('{"a": 1}')
+is_int_check = is_int("42")
+is_list_check = is_list("[1, 2]")
 
 # Работа с URL
 url = format_url("https://example.com")
